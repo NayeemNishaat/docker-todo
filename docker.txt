@@ -1,0 +1,112 @@
+Chapter: Init:
+Install the docker desktop app!
+
+Chapter: Create Config File:
+dockerfile
+
+// Part: Basic Config
+FROM node:18
+MAINTAINER nayeemnishaat@gmail.com
+# RUN apk add --no-cache python2 g++ make
+WORKDIR /app
+COPY . .
+RUN yarn install --production
+CMD ["node", "src/index.js"]
+EXPOSE 3000
+
+// Part: Explanation
+Key: FROM -> It tells docker, from which base image you want to base your image from. In our example, we are creating an image from the node image. FROM instruction used to specify the valid docker image name. So specified Docker Image will be downloaded from docker hub registry if it is not exists locally.
+Point: Examples:
+	from docker.io/centos:latest
+	from docker.io/centos:6
+
+Key: MAINTAINER -> The next command is the person who is going to maintain this image. Here you specify the MAINTAINER keyword and just mention the email ID.
+Point: Examples:
+	maintainer administrator
+	maintainer admin @ learnitguide.net
+	maintainer devops engineer(admin @ learnitguide.net)
+
+Key: LABEL -> LABEL instruction is used to specify metadata informations to an image. A LABEL is a key-value  pair.
+Point: Examples:
+	label “application_environment”=”development”
+	label “application_support”=”learnitguide.net group”
+
+Key: EXPOSE -> EXPOSE instruction is used to inform about the network ports that the container listens on runtime. Docker uses this information to interconnect containers using links and to set up port redirection on docker host system.
+Point: Examples:
+	expose 80 443
+	expose 80/tcp 8080/udp
+
+Key: ADD -> ADD instruction is used to copy files, directories and remote URL files to the destination (docker container) within the filesystem of the Docker Images. Add instruction also has two forms – Shell Form and Executable Form.
+Point: Examples: ADD src dest
+	ADD testfile data
+
+Key: RUN -> RUN instruction is used to executes any commands on top of the current image and this will create a new layer. RUN instruction has two forms – Shell Form and Executable Form.
+Point: Examples:
+	run yum update
+	run systemctl start httpd
+
+Key: WORKDIR -> WORKDIR instruction is used to set the working directory.
+Point: Examples:
+	workdir /app/
+	workdir /java_dst/
+
+Key: COPY ->COPY instruction is used to copy files, directories and remote URL files to the destination within the filesystem of the Docker Images. COPY instruction also has two forms – Shell Form and Executable Form.
+Point: Examples:
+	copy src dest
+	copy /root/testfile /data/
+Remark: COPY . .
+Note: First . -> Current Directory
+Note: Second . -> WORKDIR Directory. So, in our case it will be /app!
+The COPY instruction copies new files or directories from <src> and adds them to the filesystem of the container at the path <dest>. The <dest> is an absolute path, or a path relative to WORKDIR
+
+Key: CMD -> CMD instruction is used to set a command to be executed when running a container. There must be only one CMD in a Dockerfile. If more than one CMD is listed, only the last CMD takes effect.
+Point: Examples:
+	cmd ping google.com
+	cmd python myapplication.py
+
+Key: ENTRYPOINT -> ENTRYPOINT instruction is used to configure and run a container as an executable.
+Point: Examples:
+	entrypoint ping google.com
+	entrypoint python myapplication.py
+
+Key: VOLUME -> VOLUME instruction is used to create or mount a volume to the docker container from the docker host filesystem.
+Point: Examples:
+	volume /data
+	volume /appdata:/appdata
+
+Key: USER -> USER instruction is used to set the username,group name, UID and GID for running subsequent commands. Else root user will be used.
+Point: Examples:
+	user webadmin
+	user webadmin:webgroup
+	user 1008
+	user 1008:1200
+
+Key: ENV -> ENV instruction is used to set environment variables with key and value. Lets say, we want to set variables APP_DIR and app_version with the values /data and 2.0 respectively. These variables will be set during the image build also available after the container launched.
+Point: Examples:
+	env app_dir /data/
+	env app_version 2.0
+
+Key: ARG -> ARG instruction is also used to set environment variables with key and value, but this variables will set only during the image build not on the container.
+Point: Examples:
+	arg tmp_name mycustom_image
+	arg tmp_ver 2.0
+
+Key: ONBUILD -> ONBUILD instruction is used to specify a command that runs when the image in the Dockerfile is used as a base image for another image.
+Point: Examples: 
+	onbuild add . /app/data
+	onbuild run yum install httpd
+Note: Ref -> https://www.learnitguide.net/2018/06/dockerfile-explained-with-examples.html
+
+Chapter: Build Container Image
+docker build -t todo .
+Note: You should be in the root of the image folder befor running the command!
+Key: -t is for setting a name to the image. Aka tag name.
+Key: todo is the container's image name!
+Key: . -> Current directory.
+
+Chapter: Start the Container
+docker run -dp 3000:3000 todo
+Key: -d Means in detached mode (in the background).
+Key: -p for mapping ports. host:sandbox! The sandbox port is exposed via EXPOSE 3000 command.
+
+After all of this the app is live on http://localhost:3000 Important: This 3000 port is the port of the host!
