@@ -143,6 +143,7 @@ Key: Inspect volume
 docker volume inspect todo-db
 
 Chapter: Bind Mount
+A bind mount is a file or folder stored anywhere on the container host filesystem, mounted into a running container. The main difference a bind mount has from a volume is that since it can exist anywhere on the host filesystem, processes outside of Docker can also modify it.
 Note: Start a Bind Mount -> -v "$(pwd):/app"
 Part: Start dev-mode Container
 docker run -dp 3000:3000 \
@@ -158,3 +159,39 @@ Point: node:12-alpine - the image to use. Note that this is the base image for o
 Point: sh -c "yarn install && yarn run dev" - the command. We’re starting a shell using sh (alpine doesn’t have bash) and running yarn install to install all dependencies and then running yarn run dev. If we look in the package.json, we’ll see that the dev script is starting nodemon.
 Point: Show Logs
 docker logs -f <CONTAINER ID>
+
+Chapter: Multi-Container
+Part: Create the network -> docker network create todo
+Part: Start a MySQL container and attach it to the network
+docker run -d \
+     --network todo --network-alias mysql \ Important: --network-alias mysql later it will be used for digging ip for host mysql
+     -v todo-mysql-data:/var/lib/mysql \
+     -e MYSQL_ROOT_PASSWORD=secret \
+     -e MYSQL_DATABASE=todos \
+     mysql:5.7 Warning: Use 8 for developing latest applications
+
+Point: Start Database -> docker start containerName (container name is random)
+Point: Stop Database -> docker stop containerName (container name is random)
+
+Chapter: Connect to MySQ
+Part: Connect to DB -> docker exec -it <mysql-container-id> mysql -u root -p Note: The docker exec command runs a new command in a running container. -it is short for --interactive + --tty when you docker run with this command. It would take you straight inside of the container,, where -d is short for --detach which means you just run the container and then detach from it so basically you run container in the background.. edit : so if you run docker container with-itd it would run the-it options and detach you from the container, so your container still running in the background even without any default app to run. docker run -it ubuntu:xenial /bin/bash starts the container in the interactive mode (hence -it flag) that allows you to interact with /bin/bash of the container. That means now you will have bash session inside the container, so you can ls, mkdir, or do any bash command inside the container.
+
+The key here is the word "interactive". If you omit the flag, the container still executes /bin/bash but exits immediately. With the flag, the container executes /bin/bash then patiently waits for your input.
+
+Warning: Note: for MySQL versions 8.0 and higher, make sure to include the following commands in mysql
+ALTER USER 'root' IDENTIFIED WITH mysql_native_password BY 'secret';
+flush privileges;
+Part: Start a new container using the nicolaka/netshoot image. Make sure to connect it to the same network.
+docker run -it --network todo nicolaka/netshoot
+Part: Look up the IP address for the hostname mysql
+
+Part: We’ll specify each of the environment variables above, as well as connect the container to our app network.
+docker run -dp 3000:3000 \
+   -w /app -v "$(pwd):/app" \
+   --network todo \
+   -e MYSQL_HOST=mysql \
+   -e MYSQL_USER=root \
+   -e MYSQL_PASSWORD=secret \
+   -e MYSQL_DB=todos \
+   node:18 \
+   bash -c "yarn install && yarn run dev"
