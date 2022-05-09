@@ -195,3 +195,9 @@ docker run -dp 3000:3000 \
    -e MYSQL_DB=todos \
    node:18 \
    bash -c "yarn install && yarn run dev"
+
+Note: If we look at the logs for the container (docker logs <container-id>), we should see a message indicating it’s using the mysql database.
+
+Part: Connect to the mysql database and prove that the items are being written to the database. Remember, the password is secret.
+docker exec -it <mysql-container-id> mysql -p todos
+And in the mysql shell, run the following: select * from todo_items;
