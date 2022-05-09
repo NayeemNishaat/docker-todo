@@ -110,3 +110,51 @@ Key: -d Means in detached mode (in the background).
 Key: -p for mapping ports. host:sandbox! The sandbox port is exposed via EXPOSE 3000 command.
 
 After all of this the app is live on http://localhost:3000 Important: This 3000 port is the port of the host!
+
+Chapter: Re-build After Update
+docker build -t getting-started .
+
+Chapter: Start the Newly Created Image
+Part: Remove the Existing Container
+Key: Get all running containers -> docker ps
+Key: Stop Container -> docker stop <the-container-id>
+Key: Remove the Container -> docker rm <the-container-id>
+Point: Stop and Remove in One Go -> docker rm -f <the-container-id>
+
+Part: Finally Start the Updated Container docker run -dp 3000:3000 getting-started
+
+Chapter: Share the  Image
+Part: Log into Docker Hub
+Part: Create a Repo, i.e. todo in docker hub!
+Part: The image tag should be username/todo in order to be able to push to remote.
+Note: Add a Tag -> docker tag todo username/todo
+Note: Remove a Tag -> docker rmi todo
+Part: Push to remote -> docker push username/todo:latest Remark: latest is the tag and username/todo is the repo name.
+
+Chapter: Volume
+Part: Create Volume for Persisting Data Across Multiple Containers
+docker volume create todo-db
+Part: Stop and Remove the todo App
+docker rm -f <id>
+Part: Start the todo app container, but add the -v flag to specify a volume mount. We will use the named volume and mount it to /etc/todos, which will capture all files created at the path.
+docker run -dp 3000:3000 -v todo-db:/etc/todos nayeemnishaat/todo
+Part: Now stop the container and restart (docker run -dp 3000:3000 -v todo-db:/etc/todos todo) and the data will be persistent.
+Key: Inspect volume
+docker volume inspect todo-db
+
+Chapter: Bind Mount
+Note: Start a Bind Mount -> -v "$(pwd):/app"
+Part: Start dev-mode Container
+docker run -dp 3000:3000 \
+	-w /app -v "$(pwd):/app" \
+	node:18 \
+	bash -c "yarn install && yarn run dev"
+
+Part: Explanation
+Point: -dp 3000:3000 - same as before. Run in detached (background) mode and create a port mapping
+Point: -w /app - sets the “working directory” or the current directory that the command will run from
+Point: -v "$(pwd):/app" - bind mount the current directory from the host in the container into the /app directory
+Point: node:12-alpine - the image to use. Note that this is the base image for our app from the Dockerfile
+Point: sh -c "yarn install && yarn run dev" - the command. We’re starting a shell using sh (alpine doesn’t have bash) and running yarn install to install all dependencies and then running yarn run dev. If we look in the package.json, we’ll see that the dev script is starting nodemon.
+Point: Show Logs
+docker logs -f <CONTAINER ID>
