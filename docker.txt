@@ -112,7 +112,7 @@ Key: -p for mapping ports. host:sandbox! The sandbox port is exposed via EXPOSE 
 After all of this the app is live on http://localhost:3000 Important: This 3000 port is the port of the host!
 
 Chapter: Re-build After Update
-docker build -t getting-started .
+docker build -t todo .
 
 Chapter: Start the Newly Created Image
 Part: Remove the Existing Container
@@ -265,3 +265,37 @@ docker-compose down	Note: It doesn’t remove the volume.
 
 Warning: Removing Volumes
 docker-compose down --volumes
+
+Chapter: Security Scanning
+docker scan <image-name (nayeemnishaat/todo)>
+
+Chapter: Image Layering
+docker image history nayeemnishaat/todo
+docker image history --no-trunc nayeemnishaat/todo
+
+Chapter: Caching
+Update the Dockerfile to copy in the package.json first, install dependencies, and then copy everything else in.
+FROM node:12-alpine
+WORKDIR /app
+COPY package.json yarn.lock ./
+RUN yarn install --production
+COPY . .
+CMD ["node", "src/index.js"]
+Part: Create a file named .dockerignore in the same folder as the Dockerfile with the content node_modules! So by doing this we are creating an image without the node_modules and making our image leaner.
+Part: Build a new image using docker build
+docker build -t nayeemnishaat/todo .
+
+Chapter: Multi-Stage Builds
+Part: React Example to Serve Only Static Files
+FROM node:12 AS build
+WORKDIR /app
+COPY package* yarn.lock ./
+RUN yarn install
+COPY public ./public
+COPY src ./src
+RUN yarn run build
+
+FROM nginx:alpine
+COPY --from=build /app/build /usr/share/nginx/html
+
+Chapter: Next Step -> Container Orchestration via Kubernetes!
