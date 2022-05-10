@@ -201,3 +201,61 @@ Note: If we look at the logs for the container (docker logs <container-id>), we 
 Part: Connect to the mysql database and prove that the items are being written to the database. Remember, the password is secret.
 docker exec -it <mysql-container-id> mysql -p todos
 And in the mysql shell, run the following: select * from todo_items;
+
+Chapter: Ultimate Docker Compose
+Note: Check Docker Compose Version -> docker-compose version Point: Linux needs to install docker-compose seperately.
+Part: Create the Compose file -> touch docker-compose.yml
+Key: services: -> Define the list of services (or containers) we want to run as part of our application.
+
+Segment: Lets convert the previous command to docker-compose form
+Key: Previous ->
+	docker run -dp 3000:3000 \
+	-w /app -v "$(pwd):/app" \
+	--network todo-app \
+	-e MYSQL_HOST=mysql \
+	-e MYSQL_USER=root \
+	-e MYSQL_PASSWORD=secret \
+	-e MYSQL_DB=todos \
+	node:18 \
+	bash -c "yarn install && yarn run dev"
+
+Key: Converted ->
+	version: 3.7
+
+	services:
+		app:
+			image: node:18
+			command: bash -c "yarn install && yarn run dev"
+			ports:
+				- 80:3000
+			working_dir: /app
+			volumes:
+				- ./:/app						Important: Current Host OS Dir 									: Sandbox OS Dir
+			environment:
+				MYSQL_HOST: mysql
+				MYSQL_USER: root
+				MYSQL_PASSWORD: secret
+				MYSQL_DB: todos
+
+		mysql:
+			image: mysql:5.7
+			volumes:
+				- todo-mysql-data:/var/lib/mysql	Important: Path to Store in 									Host OS : Path where Stored 									in Sandbox OS
+			environment:
+				MYSQL_ROOT_PASSWORD: secret
+				MYSQL_DATABASE: todos
+
+	volumes:
+		todo-mysql-data:						Important: Named volume with 											default settings.
+
+Chapter: Run the Application Stack
+Note: Make sure no other copies of the app/db are running first (docker ps and docker rm -f <ids>).
+Part: Start up the application stack
+docker-compose up -d
+Part: Show All Logs
+docker-compose logs -f	Note: -f for following logs to get live logs!
+Part: Show Specific Logs
+docker-compose logs -f <service name (app_1)>
+
+Remark: By default the project name is the dir name where docker-compose.yml is located in.
+Remark: The names are also a little more descriptive, as they follow the pattern of <project-name>_<service-name>_<replica-number>
