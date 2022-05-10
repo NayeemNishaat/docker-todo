@@ -259,3 +259,9 @@ docker-compose logs -f <service name (app_1)>
 
 Remark: By default the project name is the dir name where docker-compose.yml is located in.
 Remark: The names are also a little more descriptive, as they follow the pattern of <project-name>_<service-name>_<replica-number>
+
+Part: Tear it all down
+docker-compose down	Note: It doesn’t remove the volume.
+
+Warning: Removing Volumes
+docker-compose down --volumes
