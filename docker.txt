@@ -1,3 +1,5 @@
+Install Docker: https://docs.docker.com/engine/install/ubuntu/
+
 Important: We need different dockerfile for frontend and backend to create frontend image and backend image. And finally at the root we will use docker-compose.yaml to combine these two image containers and fire them up!
 
 Chapter: Init:
